@@ -14,7 +14,7 @@ def main_func():
     max_avg = 0
     index = -1
 
-    for zero_index in range(n-k):
+    for zero_index in range(n-k+1):
         avg = sum(array[zero_index:zero_index+k]) / len(array[zero_index:zero_index+k])
         if avg > max_avg:
             index = zero_index
@@ -24,9 +24,11 @@ def main_func():
 
 
 if __name__ == "__main__":
-    try:
-        main_func()
-    except ValueError:
-        print("Something gone wrong with input values")
-    except ZeroDivisionError:
-        print("Something gone wrong with input values")
+    while True:
+        try:
+            main_func()
+            break
+        except ValueError:
+            print("Something gone wrong with input values, lets try again")
+        except ZeroDivisionError:
+            print("Something gone wrong with input values, lets try again")
