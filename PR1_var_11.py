@@ -59,15 +59,3 @@ class Pr1Task(BaseTask):
         for num in array:
             if num <= 0:
                 raise ValidationError('nums in array must be > 0')
-
-
-if __name__ == '__main__':
-    while True:
-        command = input('type exit if you want to stop code, if you want to run task type run: ')
-        if command == 'run':
-            task = Pr1Task()
-            task.run()
-        elif command == 'exit':
-            exit()
-        else:
-            print('Unknown command')
