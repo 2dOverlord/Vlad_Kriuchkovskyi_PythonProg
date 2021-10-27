@@ -3,6 +3,7 @@ from datetime import date
 
 class ValidatorException(BaseException):
     def __init__(self, obj_id, field_name, message=''):
+        self.obj_id = obj_id
         self.field_name = field_name
         self.message = message
 
@@ -17,14 +18,10 @@ class Validator:
     def __init__(self):
         pass
 
-    def __call__(self, collector, mode, ID: int, payer_name: str, card_number: int, month: int, year: int, CVC: int,
+    def __call__(self, ID: int, payer_name: str, card_number: int, month: int, year: int, CVC: int,
                  payment_date: str, amount: float, *args, **kwargs):
-        self.collector = collector
-
         self.obj_id = ID
         self.check_if_possible_to_int(id=ID, card_number=card_number, month=month, year=year, cvc=CVC)
-        # if not mode == 'edit':
-        #     self.check_if_unique('id', ID)
         self.check_payer_name(payer_name)
         self.check_card_number(card_number)
         self.check_month(month)
@@ -40,15 +37,9 @@ class Validator:
             except ValueError:
                 raise ValidatorException(self.obj_id, field_name, f'{field_name} must be an integer value')
 
-    def check_if_unique(self, field_name, value):
-        values = self.collector.get_values(field_name)
-        if value in values:
-            raise ValidatorException(self.obj_id, field_name, f'{field_name} must be UNIQUE parameter')
-
     def check_payer_name(self, payer_name):
         if not payer_name.isalpha():
             raise ValidatorException(self.obj_id, 'payer_name', 'Payer name must not contain anything except of letters')
-
 
     def check_card_number(self, card_number):
         if not len(card_number) == 16:
@@ -88,3 +79,36 @@ class Validator:
                 raise ValidatorException(self.obj_id, 'amount', 'Your amount is lower than 1')
         except TypeError:
             raise ValidatorException(self.obj_id, 'amount', 'Amount must be Float or Int number')
+
+    @staticmethod
+    def validate(func):
+        def wrapped(*args, **kwargs):
+            print(args)
+            print(func.__dict__)
+            validator = Validator()
+            validator(*args)
+            value = func(*args, **kwargs)
+            return value
+        return wrapped
+
+    @staticmethod
+    def validate_concrete_value(func):
+        def wrapped(*args, **kwargs):
+            obj_id = args[1]
+            field_name, value = kwargs.values()
+            print(field_name, value)
+            validator = Validator()
+            validator.obj_id = obj_id
+            val_dict = {
+                'payer_name': validator.check_payer_name,
+                'card_number': validator.check_card_number,
+                'month': validator.check_month,
+                'year': validator.check_year,
+                'cvc': validator.check_cvc,
+                'payment_date': validator.check_payment_date,
+                'amount': validator.check_amount,
+            }
+            val_dict[field_name](value)
+            args = list(args) + list(kwargs.values())
+            return func(*args)
+        return wrapped

@@ -1,6 +1,7 @@
 from validator import Validator
 
 
+@Validator.validate
 class Transaction:
     """
     FIELDS:
@@ -36,23 +37,26 @@ class Transaction:
     def __str__(self):
         return ',\n'.join(f'{key}: {value}'.replace('_', ' ') for key, value in self.__dict__.items()) + ','
 
+    def __setattr__(self, key, value):
+        self.__dict__[key] = value
+
 
 class TransactionCollection:
     def __init__(self):
         self.container = []
 
     def append(self, args):
-        Validator()(self, '', *args)
         obj = Transaction(*args)
         self.container.append(obj)
 
+    @Validator.validate_concrete_value
     def edit_by_id(self, id, field_name, value):
         for obj in self.container:
-            if obj.id == int(id) and field_name in obj.__dict__.values():
+            if obj.id == int(id) and field_name in obj.__dict__.keys():
                 obj_dict = obj.__dict__
                 obj_dict[field_name] = value
-                Validator()(self, 'edit', *[str(value) for value in obj_dict.values()])
-                obj.__dict__[field_name] = value
+                # Validator()(self, *[str(value) for value in obj_dict.values()])
+                setattr(obj, field_name, value)
 
                 return obj
         return None

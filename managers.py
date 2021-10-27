@@ -1,6 +1,7 @@
 from transaction import TransactionCollection
 from validator import ValidatorException
 
+
 class FileManager:
     def __init__(self, file_name, method):
         self.file_name = file_name
@@ -83,32 +84,30 @@ class CollectionManager:
                 object_list.append(value)
 
             object_lists.append(object_list)
-
+        error_list = []
         for obj in object_lists:
             try:
                 self.collection.append(obj)
             except ValidatorException as val_err:
-                object_id = obj[0]
+                error_list.append(val_err)
 
-                with FileManager(self.file_name, 'r') as fm:
+        for val_err in error_list:
+            with FileManager(self.file_name, 'r') as fm:
+                object_id = val_err.obj_id
+                count_lines = 0
+                for line in fm.file_obj.readlines():
+                    count_lines += 1
+                    if line == f'id: {object_id},\n':
+                        print('Знайшлась помилка в вашому файлі, текст помилки: ')
+                        print(val_err)
+                        print(f'id об\'єкту = {object_id}, назва поля = {val_err.field_name}, '
+                              f'стрічка об\'єкта в текстовому файлі n = {count_lines}')
 
-                    count_lines = 0
-                    for line in fm.file_obj.readlines():
-                        count_lines += 1
-                        if line == f'id: {object_id},\n':
-                            print('Знайшлась помилка в вашому файлі, текст помилки: ')
-                            print(val_err)
-                            print(f'id об\'єкту = {object_id}, назва поля = {val_err.field_name}, '
-                                  f'стрічка об\'єкта в текстовому файлі n = {count_lines}')
-                            break
+        save = input('Введіть yes якщо хочете зберегти ті об\'єкти які вже додані до колекції: ')
 
-                    save = input('Введіть yes якщо хочете зберегти ті об\'єкти які вже додані до колекції: ')
-
-                    if save != 'yes':
-                        for id in object_lists:
-                            self.collection.remove_by_id(int(id[0]))
-
-                    break
+        if save != 'yes':
+            for id in object_lists:
+                self.collection.remove_by_id(int(id[0]))
 
     def search(self):
         pattern = input('Введіть паттерн по якому будемо шукати: ')
@@ -182,9 +181,12 @@ class CollectionManager:
         value = input('Введіть нове значення: ')
         id = input('Введіть id об\'єкту: ')
 
-        if not self.collection.edit_by_id(id, field_name=field, value=value):
-            print('Об\'єкту з таким id або введеного поля немає')
-            return
+        try:
+            if not self.collection.edit_by_id(id, field_name=field, value=value):
+                print('Об\'єкту з таким id або введеного поля немає')
+                return
+        except ValidatorException as err:
+            print(err)
 
         try:
             self.file_name
