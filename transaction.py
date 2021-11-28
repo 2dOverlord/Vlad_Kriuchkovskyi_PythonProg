@@ -91,16 +91,13 @@ class TransactionCollection:
     def remove_object(self, obj):
         try:
             self.container.remove(obj)
-        except KeyError:
+        except ValueError:
             print('No such object in list')
 
     def remove_by_id(self, obj_id):
-        try:
-            for obj in self.container:
-                if obj.id == obj_id:
-                    self.container.remove(obj)
-        except KeyError:
-            pass
+        for obj in self.container:
+            if obj.id == obj_id:
+                self.container.remove(obj)
 
     def get_values(self, field_name):
         return [obj.__dict__[field_name] for obj in self.container]
