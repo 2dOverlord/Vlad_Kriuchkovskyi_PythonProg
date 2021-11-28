@@ -85,18 +85,18 @@ class ValidatorWrapper:
 class Validator:
     def __init__(self):
         pass
-
-    def __call__(self, ID: int, payer_name: str, card_number: int, month: int, year: int, CVC: int,
-                 payment_date: str, amount: float, *args, **kwargs):
-        self.obj_id = ID
-        self.check_if_possible_to_int(id=ID, card_number=card_number, month=month, year=year, cvc=CVC)
-        self.check_payer_name(payer_name)
-        self.check_card_number(card_number)
-        self.check_month(month)
-        self.check_year(year)
-        self.check_cvc(CVC)
-        self.check_payment_date(payment_date)
-        self.check_amount(amount)
+    #
+    # def __call__(self, ID: int, payer_name: str, card_number: int, month: int, year: int, CVC: int,
+    #              payment_date: str, amount: float, *args, **kwargs):
+    #     self.obj_id = ID
+    #     self.check_if_possible_to_int(id=ID, card_number=card_number, month=month, year=year, cvc=CVC)
+    #     self.check_payer_name(payer_name)
+    #     self.check_card_number(card_number)
+    #     self.check_month(month)
+    #     self.check_year(year)
+    #     self.check_cvc(CVC)
+    #     self.check_payment_date(payment_date)
+    #     self.check_amount(amount)
 
     def check_if_possible_to_int(self, **kwargs):
         for field_name, value in kwargs.items():
@@ -120,9 +120,8 @@ class Validator:
     def check_year(self, year):
         if int(year) < int(date.today().year):
             raise ValidatorException(self.obj_id, 'year', 'Year on your card must be more or equal to an actual year')
-        if int(year) - int(date.today().year) > 10:
-            raise ValidatorException(self.obj_id, 'year', 'Well, maybe you know bank where you can create a card for 10 years ahead,'
-                                             ' but Im not, so **** you')
+        # if int(year) - int(date.today().year) > 10:
+        #     raise ValidatorException(self.obj_id, 'year', 'Well, maybe you know bank where you can create a card for 10 years ahead,')
 
     def check_cvc(self, cvc):
         if not len(cvc) == 3 and not len(cvc) == 4:
@@ -145,17 +144,17 @@ class Validator:
             amount = float(amount)
             if amount < 1:
                 raise ValidatorException(self.obj_id, 'amount', 'Your amount is lower than 1')
-        except TypeError:
+        except (TypeError, ValueError):
             raise ValidatorException(self.obj_id, 'amount', 'Amount must be Float or Int number')
 
-    @staticmethod
-    def validate(func):
-        def wrapped(*args, **kwargs):
-            validator = Validator()
-            validator(*args)
-            value = func(*args, **kwargs)
-            return value
-        return wrapped
+    # @staticmethod
+    # def validate(func):
+    #     def wrapped(*args, **kwargs):
+    #         validator = Validator()
+    #         validator(*args)
+    #         value = func(*args, **kwargs)
+    #         return value
+    #     return wrapped
 
     @staticmethod
     def validate_concrete_value(func):
