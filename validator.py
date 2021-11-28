@@ -14,6 +14,74 @@ class ValidatorException(BaseException):
         return self.message
 
 
+class ValidatorWrapper:
+    @staticmethod
+    def initializer(obj):
+        validator = Validator()
+        validator.obj_id = obj.id
+        return validator
+
+    @staticmethod
+    def validate_payer_name(func):
+        def wrapper(obj, payer_name):
+            validator = ValidatorWrapper.initializer(obj)
+            validator.check_payer_name(payer_name)
+            func(obj, payer_name)
+        return wrapper
+
+    @staticmethod
+    def validate_card_number(func):
+        def wrapper(obj, card_number):
+            validator = ValidatorWrapper.initializer(obj)
+            validator.check_if_possible_to_int(card_number=card_number)
+            validator.check_card_number(card_number)
+            func(obj, card_number)
+        return wrapper
+
+    @staticmethod
+    def validate_month(func):
+        def wrapper(obj, month, *args):
+            validator = ValidatorWrapper.initializer(obj)
+            validator.check_if_possible_to_int(month=month)
+            validator.check_month(month)
+            func(obj, month)
+        return wrapper
+
+    @staticmethod
+    def validate_year(func):
+        def wrapper(obj, year, *args):
+            validator = ValidatorWrapper.initializer(obj)
+            validator.check_if_possible_to_int(year=year)
+            validator.check_year(year)
+            func(obj, year)
+        return wrapper
+
+    @staticmethod
+    def validate_payment_date(func):
+        def wrapper(obj, date):
+            validator = ValidatorWrapper.initializer(obj)
+            validator.check_payment_date(date)
+            func(obj, date)
+        return wrapper
+
+    @staticmethod
+    def validate_cvc(func):
+        def wrapper(obj, cvc):
+            validator = ValidatorWrapper.initializer(obj)
+            validator.check_if_possible_to_int(cvc=cvc)
+            validator.check_cvc(cvc)
+            func(obj, cvc)
+        return wrapper
+
+    @staticmethod
+    def validate_amount(func):
+        def wrapper(obj, amount):
+            validator = ValidatorWrapper.initializer(obj)
+            validator.check_amount(amount)
+            func(obj, amount)
+        return wrapper
+
+
 class Validator:
     def __init__(self):
         pass
@@ -83,8 +151,6 @@ class Validator:
     @staticmethod
     def validate(func):
         def wrapped(*args, **kwargs):
-            print(args)
-            print(func.__dict__)
             validator = Validator()
             validator(*args)
             value = func(*args, **kwargs)

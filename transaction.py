@@ -1,7 +1,6 @@
-from validator import Validator
+from validator import Validator, ValidatorWrapper
 
 
-@Validator.validate
 class Transaction:
     """
     FIELDS:
@@ -11,13 +10,41 @@ class Transaction:
     def __init__(self, ID: int, payer_name: str, card_number: int, month: int, year: int, CVC: int,
                  payment_date: str, amount: float):
         self.id = int(ID)
-        self.payer_name = payer_name
-        self.card_number = int(card_number)
-        self.month = int(month)
-        self.year = int(year)
-        self.cvc = int(CVC)
-        self.payment_date = payment_date
+        self.set_payer_name(payer_name)
+        self.set_card_number(card_number)
+        self.set_month(month)
+        self.set_year(year)
+        self.set_payment_date(payment_date)
+        self.set_cvc(CVC)
+        self.set_amount(amount)
+
+    @ValidatorWrapper.validate_amount
+    def set_amount(self, amount):
         self.amount = float(amount)
+
+    @ValidatorWrapper.validate_cvc
+    def set_cvc(self, cvc):
+        self.cvc = int(cvc)
+
+    @ValidatorWrapper.validate_payer_name
+    def set_payer_name(self, payer_name):
+        self.payer_name = payer_name
+
+    @ValidatorWrapper.validate_card_number
+    def set_card_number(self, card_number):
+        self.card_number = int(card_number)
+
+    @ValidatorWrapper.validate_month
+    def set_month(self, month):
+        self.month = int(month)
+
+    @ValidatorWrapper.validate_year
+    def set_year(self, year):
+        self.year = int(year)
+
+    @ValidatorWrapper.validate_payment_date
+    def set_payment_date(self, payment_date):
+        self.payment_date = payment_date
 
     def to_dict(self):
         return self.__dict__

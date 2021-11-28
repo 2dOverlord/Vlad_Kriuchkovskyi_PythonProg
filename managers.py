@@ -97,7 +97,7 @@ class CollectionManager:
                 count_lines = 0
                 for line in fm.file_obj.readlines():
                     count_lines += 1
-                    if line == f'id: {object_id},\n':
+                    if f'id: {object_id}' in line:
                         print('Знайшлась помилка в вашому файлі, текст помилки: ')
                         print(val_err)
                         print(f'id об\'єкту = {object_id}, назва поля = {val_err.field_name}, '
