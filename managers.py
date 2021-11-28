@@ -1,5 +1,6 @@
 from transaction import TransactionCollection
 from validator import ValidatorException
+from memento import ConcreteMemento
 
 
 class FileManager:
@@ -42,6 +43,32 @@ class CollectionManager:
     def __init__(self):
         self.collection = TransactionCollection()
 
+    def save(self):
+        """
+        Saves the current state inside a memento.
+        """
+        try:
+            self.file_name
+            return ConcreteMemento(self.collection.container[:], self.file_name)
+        except AttributeError:
+            return ConcreteMemento(self.collection.container[:])
+
+    def restore(self, memento) -> None:
+        """
+        Restores the Originator's state from a memento object.
+        """
+
+        self.collection.container, file_info = memento.get_state()
+
+        if file_info:
+            self.file_name = file_info['name']
+
+            with open(self.file_name, 'w') as file:
+                file.seek(0, 0)
+                file.write(file_info['text'])
+
+        print(f"Originator: My state has changed to previous")
+
     def get_all_objects_from_file(self):
         try:
             self.file_name
@@ -52,7 +79,7 @@ class CollectionManager:
             with FileManager(self.file_name, 'r') as fm:
                 data = fm.get_all_data()
         except FileNotFoundError:
-            print('Для цього методу файл повинен існувати, тому введіть наступний раз будь ласка існуюче ім\'я файлу')
+            print('Please, input file name: ')
             del self.file_name
             return
 
@@ -98,19 +125,19 @@ class CollectionManager:
                 for line in fm.file_obj.readlines():
                     count_lines += 1
                     if f'id: {object_id}' in line:
-                        print('Знайшлась помилка в вашому файлі, текст помилки: ')
+                        print('Weve found error in file, here is the text of an error: ')
                         print(val_err)
-                        print(f'id об\'єкту = {object_id}, назва поля = {val_err.field_name}, '
-                              f'стрічка об\'єкта в текстовому файлі n = {count_lines}')
+                        print(f'id = {object_id}, field name = {val_err.field_name}, '
+                              f'the string number is {count_lines}')
 
-        save = input('Введіть yes якщо хочете зберегти ті об\'єкти які вже додані до колекції: ')
+        save = input('Input yes, if you want to save all correct objects: ')
 
         if save != 'yes':
             for id in object_lists:
                 self.collection.remove_by_id(int(id[0]))
 
     def search(self):
-        pattern = input('Введіть паттерн по якому будемо шукати: ')
+        pattern = input('Enter the search pattern: ')
         result = []
 
         for obj_dict in self.collection.get_data_in_dicts():
@@ -143,8 +170,8 @@ class CollectionManager:
 
         try:
             self.collection.append(inputs)
-            print('Чи бажаете ви додати новостворенний об\'єкт до текстового файлу?')
-            write = input('Введіть yes якщо так, будь яка інша команда буде зараховуватись як ні: ')
+            print('Do you want to add new object to the file?')
+            write = input('Enter yes if you want: ')
             if write == 'yes':
                 try:
                     self.file_name
@@ -163,9 +190,7 @@ class CollectionManager:
     def change_file_name(self):
         self.enter_file_name(message='Добре, давайте оновимо назву файла')
 
-    def enter_file_name(self, message='Ми помітили що ви ще не вводили назву файла '
-                                      'з яким ви хочете працювати тому вам потрібно ввести'
-                                      'її зараз, назва повинна закінчуватись на .txt'):
+    def enter_file_name(self, message='There is no file name in manager, please enter the file name: '):
         print(message)
 
         file_name = ''

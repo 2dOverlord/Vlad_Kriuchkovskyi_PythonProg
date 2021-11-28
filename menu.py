@@ -1,5 +1,5 @@
 from managers import CollectionManager
-
+from memento import Caretaker
 
 class Command:
     def __init__(self, name, description=''):
@@ -16,7 +16,8 @@ class Command:
 class Menu:
     def __init__(self):
         self.manager = CollectionManager()
-
+        self.caretaker = Caretaker(self.manager)
+        self.caretaker.backup()
         self.start_commands = {
             Command('print all', 'Print all objects'): self.manager.print_all,
             Command('input', 'Add object or objects to collection'): self.input,
@@ -25,7 +26,9 @@ class Menu:
             Command('sort', 'Sort menu'): self.sort,
             Command('edit', 'Edit an object by id'): self.manager.edit_by_id,
             Command('remove', 'Remove an object by id'): self.manager.remove_by_id,
-            Command('exit', 'Exit from programm'): exit,
+            Command('undo', 'Undo the previous command'): self.caretaker.undo,
+            Command('redo', 'Redo the previous command'): self.caretaker.redo,
+            Command('exit', 'Exit from program'): exit,
         }
 
         self.input_commands = {
@@ -52,6 +55,8 @@ class Menu:
             input_command = input('Enter command name: ')
             try:
                 self.start_commands[Command(input_command)]()
+                if input_command not in ('print all', 'find', 'exit', 'undo', 'redo', 'return'):
+                    self.caretaker.backup()
             except KeyError:
                 print('There is no such command\n')
 
@@ -70,9 +75,9 @@ class Menu:
             print(start_message)
             for command in add_commands:
                 print(f'{command.name}: {command.description}\n')
-            print('return: Повернутись до головного меню')
+            print('return: Return to main menu')
             print('-' * 15 + '\n')
-            input_command = input('Введіть назву команди: ')
+            input_command = input('Enter command name: ')
             try:
                 if input_command == 'return':
                     break
