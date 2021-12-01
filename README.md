@@ -1,1 +1,0 @@
-# Vlad_Kriuchkovskyi_PythonProg
